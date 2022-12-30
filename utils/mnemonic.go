@@ -2058,14 +2058,14 @@ var wordlist = []string{
 }
 
 type EntropyInfo struct {
-	Size         int
-	RandWidth    int
-	ChecksumWidth int
-	ChecksumMask byte
+	Size              int
+	RandWidth         int
+	ChecksumWidth     int
+	ChecksumMask      byte
 	MnemonicWordCount int
-	BufferLength int
-	Buffer []byte
-	RandView []byte
+	BufferLength      int
+	Buffer            []byte
+	RandView          []byte
 }
 
 func NewEntropyInfo(size int) *EntropyInfo {
@@ -2088,7 +2088,7 @@ func RandomMnemonic(entropy *EntropyInfo) (string, error) {
 	}
 
 	// Calculate checksum
-	entropy.Buffer[entropy.BufferLength - 1] = sha256.Sum256(entropy.RandView)[0] & entropy.ChecksumMask
+	entropy.Buffer[entropy.BufferLength-1] = sha256.Sum256(entropy.RandView)[0] & entropy.ChecksumMask
 	var sb strings.Builder
 	sb.Grow(entropy.MnemonicWordCount * 10)
 	sb.WriteString(wordlist[uint16(entropy.Buffer[0])<<3|uint16(entropy.Buffer[1])>>5])

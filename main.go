@@ -76,7 +76,7 @@ func main() {
 		serialized[2] = byte(index >> 8)
 		serialized[3] = byte(index)
 		derivation[i] = DerivationPart{
-			last:       i == derivationLength - 1,
+			last:       i == derivationLength-1,
 			i:          index,
 			serialized: serialized,
 		}
@@ -137,7 +137,7 @@ func main() {
 		newPrivateKey := new(big.Int).Add(parsedLeft, privateKey)
 		privateKey = new(big.Int).Mod(newPrivateKey, n)
 		if privateKey.Cmp(big.NewInt(0)) == 0 || privateKey.Cmp(n) != -1 {
-			panic("invalid private key!")
+			panic("invalid private key!") // TODO: skip this mnemonic and try again
 		}
 
 		privateKeyBytes = privateKey.FillBytes(make([]byte, 32))
