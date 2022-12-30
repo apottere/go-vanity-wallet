@@ -2060,75 +2060,75 @@ var wordlist = []string{
 func RandomMnemonic(entropy int, checksumMask byte, mnemonicLength int) (string, error) {
 	bufferLength := (entropy / 8) + 1
 	buffer := make([]byte, bufferLength)
-	view := buffer[:bufferLength - 1]
+	view := buffer[:bufferLength-1]
 	_, err := rand.Read(view)
 	if err != nil {
 		return "", err
 	}
 
 	// Calculate checksum
-	buffer[bufferLength - 1] = sha256.Sum256(view)[0] & checksumMask
+	buffer[bufferLength-1] = sha256.Sum256(view)[0] & checksumMask
 	var sb strings.Builder
 	sb.Grow(mnemonicLength * 10)
-	sb.WriteString(wordlist[uint16(buffer[0]) << 3 | uint16(buffer[1]) >> 5])
+	sb.WriteString(wordlist[uint16(buffer[0])<<3|uint16(buffer[1])>>5])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[1]) & 0x1F) << 6 | uint16(buffer[2]) >> 2])
+	sb.WriteString(wordlist[(uint16(buffer[1])&0x1F)<<6|uint16(buffer[2])>>2])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[2]) & 0x03) << 9 | uint16(buffer[3]) << 1 | uint16(buffer[4]) >> 7])
+	sb.WriteString(wordlist[(uint16(buffer[2])&0x03)<<9|uint16(buffer[3])<<1|uint16(buffer[4])>>7])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[4]) & 0x7F) << 4 | uint16(buffer[5]) >> 4])
+	sb.WriteString(wordlist[(uint16(buffer[4])&0x7F)<<4|uint16(buffer[5])>>4])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[5]) & 0x0F) << 7 | uint16(buffer[6]) >> 1])
+	sb.WriteString(wordlist[(uint16(buffer[5])&0x0F)<<7|uint16(buffer[6])>>1])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[6]) & 0x01) << 10 | uint16(buffer[7]) << 2 | uint16(buffer[8]) >> 6])
+	sb.WriteString(wordlist[(uint16(buffer[6])&0x01)<<10|uint16(buffer[7])<<2|uint16(buffer[8])>>6])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[8]) & 0x3F) << 5 | uint16(buffer[9]) >> 3])
+	sb.WriteString(wordlist[(uint16(buffer[8])&0x3F)<<5|uint16(buffer[9])>>3])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[9]) & 0x07) << 8 | uint16(buffer[10])])
+	sb.WriteString(wordlist[(uint16(buffer[9])&0x07)<<8|uint16(buffer[10])])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[uint16(buffer[11]) << 3 | uint16(buffer[12]) >> 5])
+	sb.WriteString(wordlist[uint16(buffer[11])<<3|uint16(buffer[12])>>5])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[12]) & 0x1F) << 6 | uint16(buffer[13]) >> 2])
+	sb.WriteString(wordlist[(uint16(buffer[12])&0x1F)<<6|uint16(buffer[13])>>2])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[13]) & 0x03) << 9 | uint16(buffer[14]) << 1 | uint16(buffer[15]) >> 7])
+	sb.WriteString(wordlist[(uint16(buffer[13])&0x03)<<9|uint16(buffer[14])<<1|uint16(buffer[15])>>7])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[15]) & 0x7F) << 4 | uint16(buffer[16]) >> 4])
+	sb.WriteString(wordlist[(uint16(buffer[15])&0x7F)<<4|uint16(buffer[16])>>4])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[16]) & 0x0F) << 7 | uint16(buffer[17]) >> 1])
+	sb.WriteString(wordlist[(uint16(buffer[16])&0x0F)<<7|uint16(buffer[17])>>1])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[17]) & 0x01) << 10 | uint16(buffer[18]) << 2 | uint16(buffer[19]) >> 6])
+	sb.WriteString(wordlist[(uint16(buffer[17])&0x01)<<10|uint16(buffer[18])<<2|uint16(buffer[19])>>6])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[19]) & 0x3F) << 5 | uint16(buffer[20]) >> 3])
+	sb.WriteString(wordlist[(uint16(buffer[19])&0x3F)<<5|uint16(buffer[20])>>3])
 	if mnemonicLength <= 15 {
 		return sb.String(), nil
 	}
 
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[20]) & 0x07) << 8 | uint16(buffer[21])])
+	sb.WriteString(wordlist[(uint16(buffer[20])&0x07)<<8|uint16(buffer[21])])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[uint16(buffer[22]) << 3 | uint16(buffer[23]) >> 5])
+	sb.WriteString(wordlist[uint16(buffer[22])<<3|uint16(buffer[23])>>5])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[23]) & 0x1F) << 6 | uint16(buffer[24]) >> 2])
+	sb.WriteString(wordlist[(uint16(buffer[23])&0x1F)<<6|uint16(buffer[24])>>2])
 	if mnemonicLength <= 18 {
 		return sb.String(), nil
 	}
 
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[24]) & 0x03) << 9 | uint16(buffer[25]) << 1 | uint16(buffer[26]) >> 7])
+	sb.WriteString(wordlist[(uint16(buffer[24])&0x03)<<9|uint16(buffer[25])<<1|uint16(buffer[26])>>7])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[26]) & 0x7F) << 4 | uint16(buffer[27]) >> 4])
+	sb.WriteString(wordlist[(uint16(buffer[26])&0x7F)<<4|uint16(buffer[27])>>4])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[27]) & 0x0F) << 7 | uint16(buffer[28]) >> 1])
+	sb.WriteString(wordlist[(uint16(buffer[27])&0x0F)<<7|uint16(buffer[28])>>1])
 	if mnemonicLength <= 21 {
 		return sb.String(), nil
 	}
 
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[28]) & 0x01) << 10 | uint16(buffer[29]) << 2 | uint16(buffer[30]) >> 6])
+	sb.WriteString(wordlist[(uint16(buffer[28])&0x01)<<10|uint16(buffer[29])<<2|uint16(buffer[30])>>6])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[30]) & 0x3F) << 5 | uint16(buffer[31]) >> 3])
+	sb.WriteString(wordlist[(uint16(buffer[30])&0x3F)<<5|uint16(buffer[31])>>3])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[31]) & 0x07) << 8 | uint16(buffer[32])])
+	sb.WriteString(wordlist[(uint16(buffer[31])&0x07)<<8|uint16(buffer[32])])
 
 	return sb.String(), nil
 }
