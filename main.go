@@ -8,7 +8,6 @@ import (
 	"github.com/dustinxie/ecc"
 	"github.com/wealdtech/go-merkletree/keccak256"
 	"golang.org/x/crypto/pbkdf2"
-	"golang.org/x/text/unicode/norm"
 	"math/big"
 	"os"
 	"strconv"
@@ -39,13 +38,13 @@ func main() {
 	}
 
 	entropyString := args[0]
-	entropy, err := strconv.Atoi(entropyString)
+	entropyInt, err := strconv.Atoi(entropyString)
 	if err != nil {
 		fatal("invalid entropy:", entropyString)
 	}
 
-	if entropy < 128 || entropy > 256 || entropy%32 != 0 {
-		fatal("entropy must be a multiple of 32 between 128 and 256")
+	if entropyInt < 128 || entropyInt > 256 || entropyInt%32 != 0 {
+		fatal("entropy must be a multiple of 32 between 128 and 256 (inclusive)")
 	}
 
 	derivationString := args[1]
@@ -83,10 +82,6 @@ func main() {
 		}
 	}
 
-	checksumWidth := entropy / 32
-	checksumMask := byte(((1 << checksumWidth) - 1) << (8 - checksumWidth))
-	mnemonicLength := (entropy + checksumWidth) / 11
-
 	derivationStringOut := ""
 	for i, part := range derivation {
 		if i > 0 {
@@ -95,16 +90,18 @@ func main() {
 		derivationStringOut += fmt.Sprintf("0x%X", part.serialized)
 	}
 
-	fmt.Println("Mnemonic Length:", mnemonicLength)
+	entropy := utils.NewEntropyInfo(entropyInt)
+
+	fmt.Println("Mnemonic Length:", entropy.MnemonicWordCount)
 	fmt.Println("Derivation Path:", derivationStringOut)
 
-	salt := norm.NFKD.Bytes([]byte("mnemonic"))
-	masterKeySeed := norm.NFKD.Bytes([]byte("Bitcoin seed"))
+	salt := []byte("mnemonic")
+	masterKeySeed := []byte("Bitcoin seed")
 	p256k1 := ecc.P256k1()
 	n := p256k1.Params().N
 
 	// Generate random mnemonic
-	mnemonic, err := utils.RandomMnemonic(entropy, checksumMask, mnemonicLength)
+	mnemonic, err := utils.RandomMnemonic(entropy)
 	if err != nil {
 		panic(err)
 	}
@@ -112,7 +109,7 @@ func main() {
 	fmt.Println("Random Mnemonic:", mnemonic)
 
 	// Create seed from mnemonic
-	seed := pbkdf2.Key(norm.NFKD.Bytes([]byte(mnemonic)), salt, 2048, 64, sha512.New)
+	seed := pbkdf2.Key([]byte(mnemonic), salt, 2048, 64, sha512.New)
 	hash := hmac.New(sha512.New, masterKeySeed)
 	hash.Write(seed)
 	I := hash.Sum(nil)

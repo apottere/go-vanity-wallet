@@ -2057,78 +2057,99 @@ var wordlist = []string{
 	"zoo",
 }
 
-func RandomMnemonic(entropy int, checksumMask byte, mnemonicLength int) (string, error) {
-	bufferLength := (entropy / 8) + 1
-	buffer := make([]byte, bufferLength)
-	view := buffer[:bufferLength-1]
-	_, err := rand.Read(view)
+type EntropyInfo struct {
+	Size         int
+	RandWidth    int
+	ChecksumWidth int
+	ChecksumMask byte
+	MnemonicWordCount int
+	BufferLength int
+	Buffer []byte
+	RandView []byte
+}
+
+func NewEntropyInfo(size int) *EntropyInfo {
+	var entropy EntropyInfo
+	entropy.Size = size
+	entropy.RandWidth = entropy.Size / 8
+	entropy.ChecksumWidth = entropy.Size / 32
+	entropy.ChecksumMask = byte(((1 << entropy.ChecksumWidth) - 1) << (8 - entropy.ChecksumWidth))
+	entropy.MnemonicWordCount = (entropy.Size + entropy.RandWidth) / 11
+	entropy.BufferLength = entropy.RandWidth + 1
+	entropy.Buffer = make([]byte, entropy.BufferLength)
+	entropy.RandView = entropy.Buffer[:entropy.RandWidth]
+	return &entropy
+}
+
+func RandomMnemonic(entropy *EntropyInfo) (string, error) {
+	_, err := rand.Read(entropy.RandView)
 	if err != nil {
 		return "", err
 	}
 
 	// Calculate checksum
-	buffer[bufferLength-1] = sha256.Sum256(view)[0] & checksumMask
+	entropy.Buffer[entropy.BufferLength - 1] = sha256.Sum256(entropy.RandView)[0] & entropy.ChecksumMask
 	var sb strings.Builder
-	sb.Grow(mnemonicLength * 10)
-	sb.WriteString(wordlist[uint16(buffer[0])<<3|uint16(buffer[1])>>5])
+	sb.Grow(entropy.MnemonicWordCount * 10)
+	sb.WriteString(wordlist[uint16(entropy.Buffer[0])<<3|uint16(entropy.Buffer[1])>>5])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[1])&0x1F)<<6|uint16(buffer[2])>>2])
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[1])&0x1F)<<6|uint16(entropy.Buffer[2])>>2])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[2])&0x03)<<9|uint16(buffer[3])<<1|uint16(buffer[4])>>7])
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[2])&0x03)<<9|uint16(entropy.Buffer[3])<<1|uint16(entropy.Buffer[4])>>7])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[4])&0x7F)<<4|uint16(buffer[5])>>4])
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[4])&0x7F)<<4|uint16(entropy.Buffer[5])>>4])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[5])&0x0F)<<7|uint16(buffer[6])>>1])
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[5])&0x0F)<<7|uint16(entropy.Buffer[6])>>1])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[6])&0x01)<<10|uint16(buffer[7])<<2|uint16(buffer[8])>>6])
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[6])&0x01)<<10|uint16(entropy.Buffer[7])<<2|uint16(entropy.Buffer[8])>>6])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[8])&0x3F)<<5|uint16(buffer[9])>>3])
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[8])&0x3F)<<5|uint16(entropy.Buffer[9])>>3])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[9])&0x07)<<8|uint16(buffer[10])])
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[9])&0x07)<<8|uint16(entropy.Buffer[10])])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[uint16(buffer[11])<<3|uint16(buffer[12])>>5])
+	sb.WriteString(wordlist[uint16(entropy.Buffer[11])<<3|uint16(entropy.Buffer[12])>>5])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[12])&0x1F)<<6|uint16(buffer[13])>>2])
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[12])&0x1F)<<6|uint16(entropy.Buffer[13])>>2])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[13])&0x03)<<9|uint16(buffer[14])<<1|uint16(buffer[15])>>7])
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[13])&0x03)<<9|uint16(entropy.Buffer[14])<<1|uint16(entropy.Buffer[15])>>7])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[15])&0x7F)<<4|uint16(buffer[16])>>4])
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[15])&0x7F)<<4|uint16(entropy.Buffer[16])>>4])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[16])&0x0F)<<7|uint16(buffer[17])>>1])
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[16])&0x0F)<<7|uint16(entropy.Buffer[17])>>1])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[17])&0x01)<<10|uint16(buffer[18])<<2|uint16(buffer[19])>>6])
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[17])&0x01)<<10|uint16(entropy.Buffer[18])<<2|uint16(entropy.Buffer[19])>>6])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[19])&0x3F)<<5|uint16(buffer[20])>>3])
-	if mnemonicLength <= 15 {
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[19])&0x3F)<<5|uint16(entropy.Buffer[20])>>3])
+	if entropy.MnemonicWordCount <= 15 {
 		return sb.String(), nil
 	}
 
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[20])&0x07)<<8|uint16(buffer[21])])
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[20])&0x07)<<8|uint16(entropy.Buffer[21])])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[uint16(buffer[22])<<3|uint16(buffer[23])>>5])
+	sb.WriteString(wordlist[uint16(entropy.Buffer[22])<<3|uint16(entropy.Buffer[23])>>5])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[23])&0x1F)<<6|uint16(buffer[24])>>2])
-	if mnemonicLength <= 18 {
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[23])&0x1F)<<6|uint16(entropy.Buffer[24])>>2])
+	if entropy.MnemonicWordCount <= 18 {
 		return sb.String(), nil
 	}
 
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[24])&0x03)<<9|uint16(buffer[25])<<1|uint16(buffer[26])>>7])
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[24])&0x03)<<9|uint16(entropy.Buffer[25])<<1|uint16(entropy.Buffer[26])>>7])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[26])&0x7F)<<4|uint16(buffer[27])>>4])
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[26])&0x7F)<<4|uint16(entropy.Buffer[27])>>4])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[27])&0x0F)<<7|uint16(buffer[28])>>1])
-	if mnemonicLength <= 21 {
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[27])&0x0F)<<7|uint16(entropy.Buffer[28])>>1])
+	if entropy.MnemonicWordCount <= 21 {
 		return sb.String(), nil
 	}
 
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[28])&0x01)<<10|uint16(buffer[29])<<2|uint16(buffer[30])>>6])
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[28])&0x01)<<10|uint16(entropy.Buffer[29])<<2|uint16(entropy.Buffer[30])>>6])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[30])&0x3F)<<5|uint16(buffer[31])>>3])
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[30])&0x3F)<<5|uint16(entropy.Buffer[31])>>3])
 	sb.WriteString(" ")
-	sb.WriteString(wordlist[(uint16(buffer[31])&0x07)<<8|uint16(buffer[32])])
+	sb.WriteString(wordlist[(uint16(entropy.Buffer[31])&0x07)<<8|uint16(entropy.Buffer[32])])
 
 	return sb.String(), nil
 }
