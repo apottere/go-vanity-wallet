@@ -15,3 +15,8 @@ go run main.go 256 "m/44'/60'/0'/0"
 ```
 go build -o ./bin/vanity-wallet
 ```
+
+For linux:
+```
+GOOS=linux GOARCH=amd64 go build -o ./bin/vanity-wallet-linux-amd64
+```
