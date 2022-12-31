@@ -7,7 +7,7 @@
 ## Development
 
 ```
-go run main.go 1 256 "m/44'/60'/0'/0"
+go run main.go 1 256 "m/44'/60'/0'/0/0"
 ```
 
 ## Build
