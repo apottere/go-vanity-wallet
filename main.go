@@ -30,6 +30,8 @@ type DerivationPart struct {
 }
 
 const hardenedLimit = 0x80000000
+var seedSalt = []byte("mnemonic")
+var masterKeySeed = []byte("Bitcoin seed")
 
 func main() {
 	args := os.Args[1:]
@@ -95,8 +97,6 @@ func main() {
 	fmt.Println("Mnemonic Length:", entropy.MnemonicWordCount)
 	fmt.Println("Derivation Path:", derivationStringOut)
 
-	salt := []byte("mnemonic")
-	masterKeySeed := []byte("Bitcoin seed")
 	p256k1 := ecc.P256k1()
 	n := p256k1.Params().N
 
@@ -106,10 +106,10 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println("Random Mnemonic:", mnemonic)
+	fmt.Println("Random Mnemonic:", string(mnemonic))
 
 	// Create seed from mnemonic
-	seed := pbkdf2.Key([]byte(mnemonic), salt, 2048, 64, sha512.New)
+	seed := pbkdf2.Key(mnemonic, seedSalt, 2048, 64, sha512.New)
 	hash := hmac.New(sha512.New, masterKeySeed)
 	hash.Write(seed)
 	I := hash.Sum(nil)
@@ -144,7 +144,7 @@ func main() {
 		chainCode = I[32:]
 	}
 
-	// Derive public key
+	// Derive address
 	x, y := p256k1.ScalarBaseMult(privateKeyBytes)
 	keccak := keccak256.New()
 	publicKey := make([]byte, 64)
