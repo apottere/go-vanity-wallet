@@ -11,6 +11,7 @@ import (
 	"hash"
 	"math/big"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -139,8 +140,15 @@ func main() {
 
 	threadsString := args[0]
 	threads, err := strconv.Atoi(threadsString)
-	if err != nil || threads < 1 {
+	if err != nil {
 		fatal("invalid thread count:", threadsString)
+	}
+	if threads < 1 {
+		threads = runtime.NumCPU()
+		fmt.Printf("Threads: %d\n", threads)
+	}
+	if threads > 10 {
+		runtime.GOMAXPROCS(threads)
 	}
 
 	entropyString := args[1]
